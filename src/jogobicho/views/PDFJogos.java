@@ -5,118 +5,86 @@
  */
 package jogobicho.views;
 
+import com.google.common.collect.Lists;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import domain.JogoBicho;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
  * @author Daniel
  */
-public class PDFJogos {
+public class PDFJogos implements PDF{
     private Document document;
-    
-    public PDFJogos () {
-        try {
-            document = new Document();
-            openPdf();
-            generatePdf();
-            closePdf();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
+    private final int jogosPorColuna = 45;
+    private final int colunasDeJogos = 3;
+    DecimalFormat df = new DecimalFormat("#,##0.00");
 
-    public boolean openPdf() {
-        boolean status = false;
+    @Override
+    public Document generate(ArrayList<JogoBicho> jogos, Document document) {
+        this.document = document;
         try {
-            File pdfFile = new File("test.pdf");
-            if (pdfFile != null) {
-                PdfWriter.getInstance(document, new FileOutputStream(pdfFile));
-                document.open();
-                status = true;
-            }
-        } catch (FileNotFoundException ex) {
-            ex.printStackTrace();
-        } catch (DocumentException ex) {
-            ex.printStackTrace();
+            generatePdf(jogos);
         } catch (Exception ex) {
-            ex.printStackTrace();
         }
-        return status;
+        return document;
     }
 
-    public void closePdf() {
-        document.close();
-    }
+    public void generatePdf(ArrayList<JogoBicho> jogos) throws DocumentException {
+       
+        while(jogos.size()%(jogosPorColuna*colunasDeJogos) != 0) {
+            jogos.add(new JogoBicho(0, 0, null));
+        }
 
-    public void generatePdf() throws DocumentException {
-        Paragraph paragraph = new Paragraph();
-        PdfPCell cell = null;
-        // Main table
-        PdfPTable mainTable = new PdfPTable(3);
-        mainTable.setWidthPercentage(100.0f);
+        List<List<JogoBicho>> separatedList = Lists.partition(jogos, jogosPorColuna);
         
+        List<List<List<JogoBicho>>> chunkedList = Lists.partition(separatedList, colunasDeJogos);
         
-        // First table
-        PdfPCell firstTableCell = new PdfPCell();
-        firstTableCell.setBorder(PdfPCell.NO_BORDER);
-        PdfPTable firstTable = new PdfPTable(2);
-        firstTable.setWidthPercentage(98.0f);
-        cell = new PdfPCell(new Phrase("T1R1C1"));
-        firstTable.addCell(cell);
-        cell = new PdfPCell(new Phrase("T1R1C2"));
-        firstTable.addCell(cell);
-        cell = new PdfPCell(new Phrase("T1R2C1"));
-        firstTable.addCell(cell);
-        cell = new PdfPCell(new Phrase("T1R2C2"));
-        firstTable.addCell(cell);
-        firstTableCell.addElement(firstTable);
-        mainTable.addCell(firstTableCell);
+        float valorAcumulado = 0;
         
-        // Second table
-        PdfPCell secondTableCell = new PdfPCell();
-        secondTableCell.setBorder(PdfPCell.NO_BORDER);
-        PdfPTable secondTable = new PdfPTable(2);
-        secondTable.setWidthPercentage(98.0f);
-        cell = new PdfPCell(new Phrase("T2R1C1"));
-        secondTable.addCell(cell);
-        cell = new PdfPCell(new Phrase("T2R1C2"));
-        secondTable.addCell(cell);
-        cell = new PdfPCell(new Phrase("T2R2C1"));
-        secondTable.addCell(cell);
-        cell = new PdfPCell(new Phrase("T2R2C2"));
-        secondTable.addCell(cell);
-        secondTableCell.addElement(secondTable);
-        mainTable.addCell(secondTableCell);
+        for (List<List<JogoBicho>> chunkedList1 : chunkedList) {
+            document.newPage();
+            PdfPTable mainTable = new PdfPTable(colunasDeJogos);
+            mainTable.setWidthPercentage(100.0f);
+            
+            for (List<JogoBicho> columnList : chunkedList1) {
+                PdfPCell columnTableCell = new PdfPCell();
+                columnTableCell.setBorder(PdfPCell.NO_BORDER);
+                
+                PdfPTable columnTable = new PdfPTable(2);
+                columnTable.setWidthPercentage(98.0f);
+                
+                for (JogoBicho jogo: columnList) {
+                    if (jogo.getDataAposta() == null) {
+                        PdfPCell cell = new PdfPCell();
+                        cell.setBorder(PdfPCell.NO_BORDER);
+                        columnTable.addCell(cell);
+                        columnTable.addCell(cell);
+                    } else {
+                        columnTable.addCell(jogo.getNumeroApostado() + "");
+                        columnTable.addCell(moneyFormat(jogo.getValorApostado()));
+                        valorAcumulado+= jogo.getValorApostado();
+                    }
+                }
+                columnTableCell.addElement(columnTable);
+                mainTable.addCell(columnTableCell);
+            }
+            document.add(mainTable);
+        }
         
-        //third
-        PdfPCell thirdTableCell = new PdfPCell();
-        thirdTableCell.setBorder(PdfPCell.NO_BORDER);
-        PdfPTable thirdTable = new PdfPTable(2);
-        thirdTable.setWidthPercentage(98.0f);
-        cell = new PdfPCell(new Phrase("T2R1C1"));
-        thirdTable.addCell(cell);
-        cell = new PdfPCell(new Phrase("T2R1C2"));
-        thirdTable.addCell(cell);
-        cell = new PdfPCell(new Phrase("T2R2C1"));
-        thirdTable.addCell(cell);
-        cell = new PdfPCell(new Phrase("T2R2C2"));
-        thirdTable.addCell(cell);
-        thirdTableCell.addElement(thirdTable);
-        mainTable.addCell(thirdTableCell);
-        
-        
-        
-        paragraph.add(mainTable);
-        document.add(paragraph);
+        Paragraph totalApostado = new Paragraph("Total apostado: " + moneyFormat(valorAcumulado));
+        totalApostado.setAlignment(Paragraph.ALIGN_CENTER);
+        document.add(totalApostado);
+    }
+    
+    private String moneyFormat(float value) {
+        return "R$ " + df.format(value);
     }
 }

@@ -5,18 +5,18 @@
  */
 package jogobicho.views;
 
-import com.sun.glass.events.KeyEvent;
 import domain.JogoBicho;
 import filters.MonetaryFilter;
 import filters.OnlyIntegerFilter;
+import java.awt.event.KeyEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.table.TableModel;
 import javax.swing.text.AbstractDocument;
 import models.JogosApostadosTableModel;
 import repositories.JogoBichoDatabaseRepository;
+import services.PDFGenerator;
 
 /**
  *
@@ -127,19 +127,19 @@ public class TelaDeJogos extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(textValorApostado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(btnIncluirValor)
-                                .addComponent(jButton1))
-                            .addComponent(textNumeroApostado)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(textValorApostado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnIncluirValor)
+                            .addComponent(jButton1)
+                            .addComponent(textNumeroApostado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -184,7 +184,8 @@ public class TelaDeJogos extends javax.swing.JFrame {
     }//GEN-LAST:event_TabelaJogosKeyReleased
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        PDFGenerator pdf = new PDFGenerator();
+        pdf.generate(JogosTableModel.getList(), new PDFJogos());
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void addJogo() {

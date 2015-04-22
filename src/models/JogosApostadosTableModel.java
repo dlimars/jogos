@@ -99,4 +99,8 @@ public class JogosApostadosTableModel extends AbstractTableModel{
         repository.remove(jogo);
         refreshTable();
     }
+
+    public ArrayList<JogoBicho> getList() {
+        return jogos;
+    }
 }
