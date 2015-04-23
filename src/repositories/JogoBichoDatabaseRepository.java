@@ -13,6 +13,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 /**
@@ -31,11 +33,10 @@ public class JogoBichoDatabaseRepository implements JogoBichoRepository{
         JogoBicho storedJogo = get(jogo);
         
         if (storedJogo == null) {
-            String sql = "INSERT INTO jogos (numeroApostado, valorApostado, dataAposta) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO jogos (numeroApostado, valorApostado) VALUES (?, ?)";
             try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
-                stmt.setInt(1, jogo.getNumeroApostado());
+                stmt.setString(1, jogo.getNumeroApostado());
                 stmt.setFloat(2, jogo.getValorApostado());
-                stmt.setString(3, jogo.getDataAposta());
                 stmt.execute();
                 return true;
             } catch (Exception e) {
@@ -43,17 +44,16 @@ public class JogoBichoDatabaseRepository implements JogoBichoRepository{
             }
         } else {
             storedJogo.setValorApostado(storedJogo.getValorApostado() + jogo.getValorApostado());
-            update(storedJogo);
+            return update(storedJogo);
         }
         return false;
     }
     
     @Override
     public boolean remove(JogoBicho jogo) {
-        String sql = "DELETE FROM jogos where numeroApostado=? and dataAposta=?";
+        String sql = "DELETE FROM jogos where numeroApostado=?";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
-            stmt.setInt(1, jogo.getNumeroApostado());
-            stmt.setString(2, jogo.getDataAposta());
+            stmt.setString(1, jogo.getNumeroApostado());
             stmt.execute();
             return true;
         } catch (Exception e) {
@@ -63,29 +63,38 @@ public class JogoBichoDatabaseRepository implements JogoBichoRepository{
 
     @Override
     public boolean update(JogoBicho jogo) {
-        String sql = "UPDATE jogos set valorApostado = ? WHERE numeroApostado=? and dataAposta=?";
+        String sql = "UPDATE jogos set valorApostado = ? WHERE numeroApostado=?";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
             stmt.setFloat(1, jogo.getValorApostado());
-            stmt.setInt(2, jogo.getNumeroApostado());
-            stmt.setString(3, jogo.getDataAposta());
+            stmt.setString(2, jogo.getNumeroApostado());
             stmt.executeUpdate();
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean clearAll() {
+        String sql = "DELETE FROM jogos";
+        try(PreparedStatement stmt = getConnection().prepareStatement(sql)) {
+            stmt.execute();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return false;
     }
 
     @Override
     public ArrayList<JogoBicho> getAll(String date) {
-        String sql = "SELECT * FROM jogos WHERE dataAposta=? ORDER BY numeroApostado";
+        String sql = "SELECT * FROM jogos ORDER BY valorApostado DESC";
         ArrayList<JogoBicho> jogos = new ArrayList<>();
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
-            stmt.setString(1, date);
             ResultSet result = stmt.executeQuery();
             while(result.next()) {
-                jogos.add(new JogoBicho(result.getInt("numeroApostado"),
-                                        result.getFloat("valorApostado"),
-                                        result.getString("dataAposta")));
+                jogos.add(new JogoBicho(result.getString("numeroApostado"),
+                                        result.getFloat("valorApostado")));
             }
             
         } catch (Exception e) {
@@ -96,15 +105,13 @@ public class JogoBichoDatabaseRepository implements JogoBichoRepository{
     }
     
     private JogoBicho get(JogoBicho jogo) {
-        String sql = "SELECT * FROM jogos WHERE numeroApostado=? and dataAposta=? limit 1";
+        String sql = "SELECT * FROM jogos WHERE numeroApostado=? limit 1";
         try (PreparedStatement stmt = getConnection().prepareStatement(sql)) {
-            stmt.setInt(1, jogo.getNumeroApostado());
-            stmt.setString(2, jogo.getDataAposta());
+            stmt.setString(1, jogo.getNumeroApostado());
             ResultSet result = stmt.executeQuery();
             if(result.next()) {
-                return new JogoBicho(result.getInt("numeroApostado"),
-                                        result.getFloat("valorApostado"),
-                                        result.getString("dataAposta"));
+                return new JogoBicho(result.getString("numeroApostado"),
+                                        result.getFloat("valorApostado"));
             }
             
         } catch (Exception e) {
@@ -125,9 +132,8 @@ public class JogoBichoDatabaseRepository implements JogoBichoRepository{
     private void createTable(){
         try (Statement stmt = getConnection().createStatement()) {
             String sql = "CREATE TABLE jogos " +
-                    "(numeroApostado INT NOT NULL," +
-                    " valorApostado DECIMAL(10,2) NOT NULL, " +
-                    " dataAposta varchar(10) NOT NULL)";
+                    "(numeroApostado VARCHAR(10) NOT NULL," +
+                    " valorApostado DECIMAL(10,2) NOT NULL)";
             stmt.executeUpdate(sql);
         } catch (Exception e) {
         }

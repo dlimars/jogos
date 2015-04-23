@@ -11,24 +11,22 @@ package domain;
  */
 public class JogoBicho {
 
-    private int numeroApostado;
+    private String numeroApostado;
     private float valorApostado;
-    private String dataAposta;
 
     public JogoBicho() {
     }
 
-    public JogoBicho(int numeroApostado, float valorAcumulado, String date) {
+    public JogoBicho(String numeroApostado, float valorAcumulado) {
         this.numeroApostado = numeroApostado;
         this.valorApostado = valorAcumulado;
-        this.dataAposta = date;
     }
 
-    public int getNumeroApostado() {
+    public String getNumeroApostado() {
         return numeroApostado;
     }
 
-    public void setNumeroApostado(int numeroApostado) {
+    public void setNumeroApostado(String numeroApostado) {
         this.numeroApostado = numeroApostado;
     }
 
@@ -39,13 +37,4 @@ public class JogoBicho {
     public void setValorApostado(float valorApostado) {
         this.valorApostado = valorApostado;
     }
-
-    public String getDataAposta() {
-        return dataAposta;
-    }
-
-    public void setDataAposta(String dataAposta) {
-        this.dataAposta = dataAposta;
-    }
-
 }

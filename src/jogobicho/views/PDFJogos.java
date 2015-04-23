@@ -9,7 +9,6 @@ import com.google.common.collect.Lists;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import domain.JogoBicho;
@@ -40,7 +39,7 @@ public class PDFJogos implements PDF{
     public void generatePdf(ArrayList<JogoBicho> jogos) throws DocumentException {
        
         while(jogos.size()%(jogosPorColuna*colunasDeJogos) != 0) {
-            jogos.add(new JogoBicho(0, 0, null));
+            jogos.add(new JogoBicho(null, 0));
         }
 
         List<List<JogoBicho>> separatedList = Lists.partition(jogos, jogosPorColuna);
@@ -62,13 +61,13 @@ public class PDFJogos implements PDF{
                 columnTable.setWidthPercentage(98.0f);
                 
                 for (JogoBicho jogo: columnList) {
-                    if (jogo.getDataAposta() == null) {
+                    if (jogo.getNumeroApostado() == null) {
                         PdfPCell cell = new PdfPCell();
                         cell.setBorder(PdfPCell.NO_BORDER);
                         columnTable.addCell(cell);
                         columnTable.addCell(cell);
                     } else {
-                        columnTable.addCell(jogo.getNumeroApostado() + "");
+                        columnTable.addCell(jogo.getNumeroApostado());
                         columnTable.addCell(moneyFormat(jogo.getValorApostado()));
                         valorAcumulado+= jogo.getValorApostado();
                     }

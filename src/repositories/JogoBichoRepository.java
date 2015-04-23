@@ -17,6 +17,7 @@ public interface JogoBichoRepository {
     public boolean add(JogoBicho jogo);
     public boolean remove(JogoBicho jogo);
     public boolean update(JogoBicho jogo);
+    public boolean clearAll();
     public ArrayList<JogoBicho> getAll(String date);
     
 }

@@ -6,11 +6,8 @@
 package jogobicho.views;
 
 import domain.JogoBicho;
-import filters.MonetaryFilter;
 import filters.OnlyIntegerFilter;
 import java.awt.event.KeyEvent;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.text.AbstractDocument;
@@ -48,6 +45,7 @@ public class TelaDeJogos extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         btnIncluirValor = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
+        btnClearAll = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -72,7 +70,6 @@ public class TelaDeJogos extends javax.swing.JFrame {
 
         jLabel1.setText("Número");
 
-        textValorApostado.setDocument(new MonetaryFilter());
         textValorApostado.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         textValorApostado.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -101,6 +98,13 @@ public class TelaDeJogos extends javax.swing.JFrame {
             }
         });
 
+        btnClearAll.setText("Apagar conteúdo da tabela");
+        btnClearAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearAllActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -121,7 +125,10 @@ public class TelaDeJogos extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnIncluirValor)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
+                        .addComponent(jButton1))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnClearAll)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -132,14 +139,17 @@ public class TelaDeJogos extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(textValorApostado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnIncluirValor)
-                            .addComponent(jButton1)
-                            .addComponent(textNumeroApostado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(textNumeroApostado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(textValorApostado, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btnIncluirValor)
+                                .addComponent(jButton1))))
                     .addComponent(jLabel2))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 272, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnClearAll)
                 .addContainerGap())
         );
 
@@ -154,7 +164,11 @@ public class TelaDeJogos extends javax.swing.JFrame {
 
     private void textValorApostadoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textValorApostadoActionPerformed
         if (!textValorApostado.getText().isEmpty()) {
-            btnIncluirValor.requestFocus();
+            try {
+                Float.parseFloat(textValorApostado.getText().replace(",", "."));
+                btnIncluirValor.requestFocus();
+            } catch (Exception e) {
+            }
         }
     }//GEN-LAST:event_textValorApostadoActionPerformed
 
@@ -171,12 +185,13 @@ public class TelaDeJogos extends javax.swing.JFrame {
     }//GEN-LAST:event_btnIncluirValorKeyReleased
 
     private void TabelaJogosKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TabelaJogosKeyReleased
-        if (KeyEvent.VK_DELETE == evt.getKeyCode()) {
+        int selectedColumn = TabelaJogos.getSelectedColumn();
+        if (KeyEvent.VK_DELETE == evt.getKeyCode() && selectedColumn == 0) {
             JogoBicho jogo = JogosTableModel.get(TabelaJogos.getSelectedRow());
             if (jogo != null) {
                 int selectedOption = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja excluir o número " + jogo.getNumeroApostado());
                 
-                if (selectedOption == JOptionPane.OK_OPTION) {
+                if (JOptionPane.OK_OPTION == selectedOption) {
                     JogosTableModel.remove(jogo);
                 }
             }
@@ -188,14 +203,21 @@ public class TelaDeJogos extends javax.swing.JFrame {
         pdf.generate(JogosTableModel.getList(), new PDFJogos());
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void btnClearAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearAllActionPerformed
+        
+        int option = JOptionPane.showConfirmDialog(null, "Tem certeza que deseja remover todos os números da tabela? esta operação não poderá ser revertida.");
+        
+        if (option == JOptionPane.OK_OPTION) {
+            JogosTableModel.clearAll();
+        }
+    }//GEN-LAST:event_btnClearAllActionPerformed
+
     private void addJogo() {
         try {
-            int numeroApostado = Integer.parseInt(textNumeroApostado.getText());
-            String valorApostadoText = textValorApostado.getText().replace(".", "").replace(",", ".");
+            String numeroApostado = textNumeroApostado.getText();
+            String valorApostadoText = textValorApostado.getText().replace(",", ".");
             float valorApostado = Float.parseFloat(valorApostadoText);
-            System.out.println(valorApostado);
-            String data = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
-            if(JogosTableModel.add(new JogoBicho(numeroApostado, valorApostado, data))) {
+            if(JogosTableModel.add(new JogoBicho(numeroApostado, valorApostado))) {
                 textNumeroApostado.setText("");
                 textValorApostado.setText("");
             }
@@ -205,6 +227,7 @@ public class TelaDeJogos extends javax.swing.JFrame {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable TabelaJogos;
+    private javax.swing.JButton btnClearAll;
     private javax.swing.JButton btnIncluirValor;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;

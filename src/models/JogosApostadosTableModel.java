@@ -21,7 +21,7 @@ import repositories.JogoBichoRepository;
 public class JogosApostadosTableModel extends AbstractTableModel{
 
     private final JogoBichoRepository repository;
-    private final String columns[] = new String[]{"Número Apostado", "Valor Acumulado", "Data da Aposta"};
+    private final String columns[] = new String[]{"Número Apostado", "Valor Acumulado"};
     private ArrayList<JogoBicho> jogos;
     private final DecimalFormat formatter = new DecimalFormat("##0.00");
     
@@ -33,7 +33,6 @@ public class JogosApostadosTableModel extends AbstractTableModel{
     
     private void refreshTable() {
         jogos = repository.getAll(new SimpleDateFormat("dd/MM/yyyy").format(new Date()));
-        System.out.println(jogos.size());
         this.fireTableDataChanged();
     }
     
@@ -54,8 +53,6 @@ public class JogosApostadosTableModel extends AbstractTableModel{
                 return jogos.get(rowIndex).getNumeroApostado();
             case 1:
                 return formatter.format(jogos.get(rowIndex).getValorApostado());
-            case 2:
-                return jogos.get(rowIndex).getDataAposta();
             default:
                 return "";
         }
@@ -102,5 +99,10 @@ public class JogosApostadosTableModel extends AbstractTableModel{
 
     public ArrayList<JogoBicho> getList() {
         return jogos;
+    }
+
+    public void clearAll() {
+        repository.clearAll();
+        refreshTable();
     }
 }
